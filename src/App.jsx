@@ -1,47 +1,65 @@
 import { BrowserRouter, Routes, Route } from "react-router-dom";
-
-import Login from "./pages/Login";
-import Register from "./pages/Register";
-import ForgotPassword from "./pages/ForgotPassword";
-import Dashboard from "./pages/Dashboard";
-
+import { ToastContainer } from "react-toastify";
 import ProtectedRoute from "./routes/ProtectedRoute";
+import { Suspense, lazy } from "react";
+import { routeList } from "./routes";
+const AuthenticationLayout = lazy(() => import("./layouts/authenticationLayout"));
+const DashboardLayout = lazy(() => import("./layouts/dashboardLayout"));
 
 function App() {
   return (
-    <BrowserRouter>
-      <Routes>
+    <>
+      <ToastContainer
+        position="top-right"
+        autoClose={2000}
+        hideProgressBar={false}
+        newestOnTop={false}
+        closeOnClick
+        rtl={false}
+        pauseOnFocusLoss
+        draggable
+        pauseOnHover
+      />
 
-        {/* Public Routes */}
+      <BrowserRouter>
+        <Suspense fallback={<h2>Loading...</h2>}>
+          <Routes>
+            <Route element={<AuthenticationLayout />}>
+              {routeList
+                .filter((route) => route.layout === "auth" && route.path !== "*")
+                .map((routeItem) => (
+                  <Route
+                    key={routeItem.path || routeItem.id}
+                    path={routeItem.path}
+                    element={
+                      <ProtectedRoute isAuth={routeItem.isAuth}>
+                        {routeItem.component}
+                      </ProtectedRoute>
+                    }
+                  />
+                ))}
+              <Route path="*" element={<ProtectedRoute isAuth={false}><div /></ProtectedRoute>} />
+            </Route>
 
-        <Route
-          path="/"
-          element={<Login />}
-        />
-
-        <Route
-          path="/register"
-          element={<Register />}
-        />
-
-        <Route
-          path="/forgot-password"
-          element={<ForgotPassword />}
-        />
-
-        {/* Protected Route */}
-
-        <Route
-          path="/dashboard"
-          element={
-            <ProtectedRoute>
-              <Dashboard />
-            </ProtectedRoute>
-          }
-        />
-
-      </Routes>
-    </BrowserRouter>
+            <Route element={<DashboardLayout />}>
+              {routeList
+                .filter((route) => route.layout === "dashboard")
+                .map((routeItem) => (
+                  <Route
+                    key={routeItem.path || routeItem.id}
+                    path={routeItem.path}
+                    element={
+                      <ProtectedRoute isAuth={routeItem.isAuth}>
+                        {routeItem.component}
+                      </ProtectedRoute>
+                    }
+                  />
+                ))}
+            </Route>
+          </Routes>
+        </Suspense>
+      </BrowserRouter>
+    </>
   );
 }
 

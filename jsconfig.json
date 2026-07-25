@@ -1,0 +1,37 @@
+{
+    "exclude": [
+        "/node_modules/"
+    ],
+    "compilerOptions": {
+        "baseUrl": "./",
+        "paths": {
+            "@images": [
+                "./src/assets/images"
+            ],
+            "@const": [
+                "src/const"
+            ],
+            "@utils": [
+                "./src/utils"
+            ],
+            "@pages": [
+                "./src/pages"
+            ],
+            "@components": [
+                "src/components"
+            ],
+            "@validations": [
+                "src/validations"
+            ],
+            "@services": [
+                "src/services"
+            ],
+            "@helpers": [
+                "src/helpers"
+            ],
+            "@actions": [
+                "src/actions"
+            ],
+        }
+    }
+}

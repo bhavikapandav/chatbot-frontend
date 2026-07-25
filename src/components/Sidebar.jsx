@@ -1,38 +1,57 @@
-import { useState } from "react";
+import { useState, useEffect, useRef } from "react";
+
 import {
   Plus,
   Search,
   MoreHorizontal,
   Pencil,
   PinOff,
+  Pin,
   Trash2,
   User,
   Camera,
   X,
+  MessageCircle,
 } from "lucide-react";
 
-const chats = [
-  "React Interview Questions",
-  "Node.js Interview Questions",
-  "MongoDB Notes",
-  "Express API Guide",
-  "JWT Authentication",
-  "Socket.io Tutorial",
-  "React Roadmap",
-  "Jest Testing Framework",
-];
-
-export default function Sidebar() {
+export default function Sidebar({
+  activeChatId,
+  setActiveChatId,
+  conversationList,
+  handleMessageList,
+  setMessageList,
+}) {
   const [openMenu, setOpenMenu] = useState(null);
+  const activeMenuRef = useRef(null);
 
   const [showProfileModal, setShowProfileModal] =
     useState(false);
+
+  const conversations = conversationList?.rows || [];
+  const pinnedConversations = conversations.filter(c => c.is_pinned);
+  const recentConversations = conversations.filter(c => !c.is_pinned);
 
   const [user, setUser] = useState({
     displayName: "Bhavika Pandav",
     username: "@bhavika",
     image: "",
   });
+
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (
+        activeMenuRef.current &&
+        !activeMenuRef.current.contains(event.target)
+      ) {
+        setOpenMenu(null);
+      }
+    };
+
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutside);
+    };
+  }, []);
 
   return (
     <>
@@ -51,6 +70,10 @@ export default function Sidebar() {
         {/* Top */}
         <div className="p-3">
           <button
+            onClick={() => {
+              setActiveChatId(null);
+              setMessageList([]);
+            }}
             className="
             w-full
             flex
@@ -60,6 +83,7 @@ export default function Sidebar() {
             rounded-xl
             bg-[#2f2f2f]
             hover:bg-[#3a3a3a]
+            cursor-pointer
             "
           >
             <Plus size={18} />
@@ -89,119 +113,261 @@ export default function Sidebar() {
           flex-1
           overflow-y-auto
           px-2
+          py-2
           "
         >
-          <p className="text-xs text-gray-400 px-3 mb-2">
-            Pinned
-          </p>
-
-          {chats.map((chat, index) => (
-            <div
-              key={index}
-              className="
-              group
-              relative
-              flex
-              items-center
-              justify-between
-              px-3
-              py-3
-              rounded-xl
-              hover:bg-[#2f2f2f]
-              cursor-pointer
-              mb-1
-              "
-            >
-              <span className="truncate text-sm">
-                {chat}
-              </span>
-
-              <button
-                onClick={(e) => {
-                  e.stopPropagation();
-
-                  setOpenMenu(
-                    openMenu === index
-                      ? null
-                      : index
-                  );
-                }}
-                className="
-                hidden
-                group-hover:flex
-                p-1
-                rounded
-                hover:bg-[#404040]
-                "
-              >
-                <MoreHorizontal size={16} />
-              </button>
-
-              {openMenu === index && (
+          {/* Pinned Section */}
+          {pinnedConversations.length > 0 && (
+            <div className="mb-4">
+              <h3 className="text-xs font-semibold text-white px-3 mb-2">
+                Pinned
+              </h3>
+              {pinnedConversations.map((conversation, index) => (
                 <div
-                  className="
-                  absolute
-                  right-2
-                  top-12
-                  z-50
-                  w-52
-                  bg-[#2f2f2f]
+                  key={conversation._id || index}
+                  ref={openMenu === conversation._id ? activeMenuRef : null}
+                  onClick={() => {
+                    setActiveChatId(conversation._id);
+                    handleMessageList(conversation._id);
+                  }}
+                  className={`
+                  group
+                  relative
+                  flex
+                  items-center
+                  justify-between
+                  px-3
+                  py-2
                   rounded-xl
-                  border
-                  border-[#444]
-                  shadow-2xl
-                  overflow-hidden
-                  "
+                  cursor-pointer
+                  mb-1
+                  transition-all
+                  duration-200
+                  ${activeChatId === conversation._id ? "bg-[#2f2f2f] text-white" : "text-gray-300 hover:bg-[#2f2f2f]/60 hover:text-white"}
+                  `}
                 >
-                  <button
-                    className="
-                    w-full
-                    flex
-                    items-center
-                    gap-3
-                    px-4
-                    py-3
-                    hover:bg-[#3a3a3a]
-                    "
-                  >
-                    <Pencil size={16} />
-                    Rename
-                  </button>
+                  <div className="flex items-center gap-3 overflow-hidden flex-1">
+                    <MessageCircle size={18} className="text-gray-300 flex-shrink-0" />
+                    <span className="truncate text-sm font-medium">
+                      {conversation?.title}
+                    </span>
+                  </div>
 
                   <button
-                    className="
-                    w-full
-                    flex
-                    items-center
-                    gap-3
-                    px-4
-                    py-3
-                    hover:bg-[#3a3a3a]
-                    "
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      setOpenMenu(
+                        openMenu === conversation._id
+                          ? null
+                          : conversation._id
+                      );
+                    }}
+                    className={`
+                    p-1
+                    rounded
+                    hover:bg-[#404040]
+                    ${openMenu === conversation._id ? "flex" : "hidden group-hover:flex"}
+                    `}
                   >
-                    <PinOff size={16} />
-                    Unpin Chat
+                    <MoreHorizontal size={16} />
                   </button>
 
-                  <button
-                    className="
-                    w-full
-                    flex
-                    items-center
-                    gap-3
-                    px-4
-                    py-3
-                    text-red-500
-                    hover:bg-[#3a3a3a]
-                    "
-                  >
-                    <Trash2 size={16} />
-                    Delete
-                  </button>
+                  {openMenu === conversation._id && (
+                    <div
+                      className="
+                      absolute
+                      right-2
+                      top-10
+                      z-50
+                      w-52
+                      bg-[#2f2f2f]
+                      rounded-xl
+                      border
+                      border-[#444]
+                      shadow-2xl
+                      overflow-hidden
+                      "
+                    >
+                      <button
+                        className="
+                        w-full
+                        flex
+                        items-center
+                        gap-3
+                        px-4
+                        py-3
+                        hover:bg-[#3a3a3a]
+                        cursor-pointer
+                        "
+                      >
+                        <Pencil size={16} />
+                        Rename
+                      </button>
+
+                      <button
+                        className="
+                        w-full
+                        flex
+                        items-center
+                        gap-3
+                        px-4
+                        py-3
+                        hover:bg-[#3a3a3a]
+                        cursor-pointer
+                        "
+                      >
+                        <PinOff size={16} />
+                        Unpin Chat
+                      </button>
+
+                      <button
+                        className="
+                        w-full
+                        flex
+                        items-center
+                        gap-3
+                        px-4
+                        py-3
+                        text-red-500
+                        hover:bg-[#3a3a3a]
+                        cursor-pointer
+                        "
+                      >
+                        <Trash2 size={16} />
+                        Delete
+                      </button>
+                    </div>
+                  )}
                 </div>
-              )}
+              ))}
             </div>
-          ))}
+          )}
+
+          {/* Recents Section */}
+          {recentConversations.length > 0 && (
+            <div className="mb-4">
+              <h3 className="text-xs font-semibold text-white px-3 mb-2 mt-4">
+                Recents
+              </h3>
+              {recentConversations.map((conversation, index) => (
+                <div
+                  key={conversation._id || index}
+                  ref={openMenu === conversation._id ? activeMenuRef : null}
+                  onClick={() => {
+                    setActiveChatId(conversation._id);
+                    handleMessageList(conversation._id);
+                  }}
+                  className={`
+                  group
+                  relative
+                  flex
+                  items-center
+                  justify-between
+                  px-3
+                  py-2
+                  rounded-xl
+                  cursor-pointer
+                  mb-1
+                  transition-all
+                  duration-200
+                  ${activeChatId === conversation._id ? "bg-[#2f2f2f] text-white" : "text-gray-300 hover:bg-[#2f2f2f]/60 hover:text-white"}
+                  `}
+                >
+                  <div className="flex items-center gap-3 overflow-hidden flex-1">
+                    <span className="truncate text-sm font-medium">
+                      {conversation?.title}
+                    </span>
+                  </div>
+
+                  <button
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      setOpenMenu(
+                        openMenu === conversation._id
+                          ? null
+                          : conversation._id
+                      );
+                    }}
+                    className={`
+                    p-1
+                    rounded
+                    hover:bg-[#404040]
+                    ${openMenu === conversation._id ? "flex" : "hidden group-hover:flex"}
+                    `}
+                  >
+                    <MoreHorizontal size={16} />
+                  </button>
+
+                  {openMenu === conversation._id && (
+                    <div
+                      className="
+                      absolute
+                      right-2
+                      top-10
+                      z-50
+                      w-52
+                      bg-[#2f2f2f]
+                      rounded-xl
+                      border
+                      border-[#444]
+                      shadow-2xl
+                      overflow-hidden
+                      "
+                    >
+                      <button
+                        className="
+                        w-full
+                        flex
+                        items-center
+                        gap-3
+                        px-4
+                        py-3
+                        hover:bg-[#3a3a3a]
+                        cursor-pointer
+                        "
+                      >
+                        <Pencil size={16} />
+                        Rename
+                      </button>
+
+                      <button
+                        className="
+                        w-full
+                        flex
+                        items-center
+                        gap-3
+                        px-4
+                        py-3
+                        hover:bg-[#3a3a3a]
+                        cursor-pointer
+                        "
+                      >
+                        <Pin size={16} />
+                        Pin Chat
+                      </button>
+
+                      <button
+                        className="
+                        w-full
+                        flex
+                        items-center
+                        gap-3
+                        px-4
+                        py-3
+                        text-red-500
+                        hover:bg-[#3a3a3a]
+                        cursor-pointer
+                        "
+                      >
+                        <Trash2 size={16} />
+                        Delete
+                      </button>
+                    </div>
+                  )}
+                </div>
+              ))}
+            </div>
+          )}
         </div>
 
         {/* Bottom Profile */}

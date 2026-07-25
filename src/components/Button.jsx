@@ -2,12 +2,14 @@ const Button = ({
   title,
   type = "button",
   className = "",
-  onClick
+  onClick,
+  disabled = false
 }) => {
   return (
     <button
       type={type}
       onClick={onClick}
+      disabled={disabled}
       className={`primary-btn ${className}`}
     >
       {title}
