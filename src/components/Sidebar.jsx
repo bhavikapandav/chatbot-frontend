@@ -20,12 +20,25 @@ export default function Sidebar({
   conversationList,
   handleMessageList,
   setMessageList,
+  handleRenameConversation,
 }) {
   const [openMenu, setOpenMenu] = useState(null);
   const activeMenuRef = useRef(null);
 
   const [showProfileModal, setShowProfileModal] =
     useState(false);
+
+  const [editingChatId, setEditingChatId] = useState(null);
+  const [editTitle, setEditTitle] = useState("");
+
+  const handleRenameSubmit = async (conversationId) => {
+    if (!editTitle.trim()) {
+      setEditingChatId(null);
+      return;
+    }
+    await handleRenameConversation(conversationId, editTitle);
+    setEditingChatId(null);
+  };
 
   const conversations = conversationList?.rows || [];
   const pinnedConversations = conversations.filter(c => c.is_pinned);
@@ -127,6 +140,7 @@ export default function Sidebar({
                   key={conversation._id || index}
                   ref={openMenu === conversation._id ? activeMenuRef : null}
                   onClick={() => {
+                    if (activeChatId === conversation._id) return;
                     setActiveChatId(conversation._id);
                     handleMessageList(conversation._id);
                   }}
@@ -148,9 +162,25 @@ export default function Sidebar({
                 >
                   <div className="flex items-center gap-3 overflow-hidden flex-1">
                     <MessageCircle size={18} className="text-gray-300 flex-shrink-0" />
-                    <span className="truncate text-sm font-medium">
-                      {conversation?.title}
-                    </span>
+                    {editingChatId === conversation._id ? (
+                      <input
+                        type="text"
+                        value={editTitle}
+                        onChange={(e) => setEditTitle(e.target.value)}
+                        onBlur={() => handleRenameSubmit(conversation._id)}
+                        onKeyDown={(e) => {
+                          if (e.key === "Enter") handleRenameSubmit(conversation._id);
+                          if (e.key === "Escape") setEditingChatId(null);
+                        }}
+                        autoFocus
+                        className="bg-[#3a3a3a] text-white text-sm px-2 py-1 rounded outline-none border border-[#555] w-full"
+                        onClick={(e) => e.stopPropagation()}
+                      />
+                    ) : (
+                      <span className="truncate text-sm font-medium">
+                        {conversation?.title}
+                      </span>
+                    )}
                   </div>
 
                   <button
@@ -174,6 +204,7 @@ export default function Sidebar({
 
                   {openMenu === conversation._id && (
                     <div
+                      onClick={(e) => e.stopPropagation()}
                       className="
                       absolute
                       right-2
@@ -189,6 +220,11 @@ export default function Sidebar({
                       "
                     >
                       <button
+                        onClick={() => {
+                          setEditingChatId(conversation._id);
+                          setEditTitle(conversation.title);
+                          setOpenMenu(null);
+                        }}
                         className="
                         w-full
                         flex
@@ -254,6 +290,7 @@ export default function Sidebar({
                   key={conversation._id || index}
                   ref={openMenu === conversation._id ? activeMenuRef : null}
                   onClick={() => {
+                    if (activeChatId === conversation._id) return;
                     setActiveChatId(conversation._id);
                     handleMessageList(conversation._id);
                   }}
@@ -274,9 +311,25 @@ export default function Sidebar({
                   `}
                 >
                   <div className="flex items-center gap-3 overflow-hidden flex-1">
-                    <span className="truncate text-sm font-medium">
-                      {conversation?.title}
-                    </span>
+                    {editingChatId === conversation._id ? (
+                      <input
+                        type="text"
+                        value={editTitle}
+                        onChange={(e) => setEditTitle(e.target.value)}
+                        onBlur={() => handleRenameSubmit(conversation._id)}
+                        onKeyDown={(e) => {
+                          if (e.key === "Enter") handleRenameSubmit(conversation._id);
+                          if (e.key === "Escape") setEditingChatId(null);
+                        }}
+                        autoFocus
+                        className="bg-[#3a3a3a] text-white text-sm px-2 py-1 rounded outline-none border border-[#555] w-full"
+                        onClick={(e) => e.stopPropagation()}
+                      />
+                    ) : (
+                      <span className="truncate text-sm font-medium">
+                        {conversation?.title}
+                      </span>
+                    )}
                   </div>
 
                   <button
@@ -300,6 +353,7 @@ export default function Sidebar({
 
                   {openMenu === conversation._id && (
                     <div
+                      onClick={(e) => e.stopPropagation()}
                       className="
                       absolute
                       right-2
@@ -315,6 +369,11 @@ export default function Sidebar({
                       "
                     >
                       <button
+                        onClick={() => {
+                          setEditingChatId(conversation._id);
+                          setEditTitle(conversation.title);
+                          setOpenMenu(null);
+                        }}
                         className="
                         w-full
                         flex

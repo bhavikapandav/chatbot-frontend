@@ -86,3 +86,18 @@ export const doDeleteConversation = async (conversationId) => {
     }
 }
 
+export const doUpdateConversationTitle = async (conversationId, title) => {
+    try {
+        const response = await axiosApi({
+            method: "PUT",
+            url: `/v1/user/conversation/${conversationId}`,
+            data: { title }
+        })
+        return response?.data
+    } catch (error) {
+        console.log({ error });
+        return error.response;
+    }
+}
+
+
