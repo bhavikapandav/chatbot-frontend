@@ -35,6 +35,7 @@ export default function Sidebar({
 
   const [editingChatId, setEditingChatId] = useState(null);
   const [editTitle, setEditTitle] = useState("");
+  const [searchQuery, setSearchQuery] = useState("");
 
   const handleRenameSubmit = async (conversationId) => {
     if (!editTitle.trim()) {
@@ -46,8 +47,11 @@ export default function Sidebar({
   };
 
   const conversations = conversationList?.rows || [];
-  const pinnedConversations = conversations.filter(c => c.is_pinned);
-  const recentConversations = conversations.filter(c => !c.is_pinned);
+  const filteredConversations = conversations.filter(c =>
+    c.title?.toLowerCase().includes(searchQuery.toLowerCase())
+  );
+  const pinnedConversations = filteredConversations.filter(c => c.is_pinned);
+  const recentConversations = filteredConversations.filter(c => !c.is_pinned);
 
   const [user, setUser] = useState({
     displayName: "Bhavika Pandav",
@@ -108,21 +112,16 @@ export default function Sidebar({
             New Chat
           </button>
 
-          <button
-            className="
-            mt-2
-            w-full
-            flex
-            items-center
-            gap-3
-            p-3
-            rounded-xl
-            hover:bg-[#2f2f2f]
-            "
-          >
-            <Search size={18} />
-            Search Chats
-          </button>
+          <div className="relative mt-2">
+            <Search size={18} className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
+            <input
+              type="text"
+              placeholder="Search Chats"
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              className="w-full pl-10 pr-4 py-2.5 rounded-xl bg-[#2f2f2f] hover:bg-[#3a3a3a] text-sm text-white placeholder-gray-400 outline-none border border-transparent focus:border-[#444] transition-all duration-150"
+            />
+          </div>
         </div>
 
         {/* Scrollable Chat List */}
@@ -134,6 +133,21 @@ export default function Sidebar({
           py-2
           "
         >
+          {pinnedConversations.length === 0 && recentConversations.length === 0 && (
+            <div className="flex flex-col items-center justify-center h-32 text-center px-4">
+              <Search size={24} className="text-gray-600 mb-2" />
+              <p className="text-gray-400 text-xs font-medium">No chats found</p>
+              {searchQuery && (
+                <button
+                  onClick={() => setSearchQuery("")}
+                  className="mt-2 text-xs text-blue-400 hover:text-blue-300 font-medium underline"
+                >
+                  Clear search
+                </button>
+              )}
+            </div>
+          )}
+
           {/* Pinned Section */}
           {pinnedConversations.length > 0 && (
             <div className="mb-4">
@@ -190,7 +204,7 @@ export default function Sidebar({
 
                   <div className="flex items-center gap-1.5 flex-shrink-0">
                     <Pin size={13} className="text-gray-400" />
-                    
+
                     <button
                       onClick={(e) => {
                         e.stopPropagation();
