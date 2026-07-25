@@ -21,12 +21,17 @@ export default function Sidebar({
   handleMessageList,
   setMessageList,
   handleRenameConversation,
+  handlePinConversation,
+  handleDeleteConversation,
 }) {
   const [openMenu, setOpenMenu] = useState(null);
   const activeMenuRef = useRef(null);
 
   const [showProfileModal, setShowProfileModal] =
     useState(false);
+
+  const [deleteConfirmChatId, setDeleteConfirmChatId] = useState(null);
+  const [deleteConfirmChatTitle, setDeleteConfirmChatTitle] = useState("");
 
   const [editingChatId, setEditingChatId] = useState(null);
   const [editTitle, setEditTitle] = useState("");
@@ -183,40 +188,46 @@ export default function Sidebar({
                     )}
                   </div>
 
-                  <button
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      setOpenMenu(
-                        openMenu === conversation._id
-                          ? null
-                          : conversation._id
-                      );
-                    }}
-                    className={`
-                    p-1
-                    rounded
-                    hover:bg-[#404040]
-                    ${openMenu === conversation._id ? "flex" : "hidden group-hover:flex"}
-                    `}
-                  >
-                    <MoreHorizontal size={16} />
-                  </button>
+                  <div className="flex items-center gap-1.5 flex-shrink-0">
+                    <Pin size={13} className="text-gray-400" />
+                    
+                    <button
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        setOpenMenu(
+                          openMenu === conversation._id
+                            ? null
+                            : conversation._id
+                        );
+                      }}
+                      className={`
+                      p-1
+                      rounded
+                      hover:bg-[#404040]
+                      ${openMenu === conversation._id ? "flex" : "hidden group-hover:flex"}
+                      `}
+                    >
+                      <MoreHorizontal size={16} />
+                    </button>
+                  </div>
 
                   {openMenu === conversation._id && (
                     <div
                       onClick={(e) => e.stopPropagation()}
                       className="
                       absolute
-                      right-2
-                      top-10
+                      right-0
+                      top-full
+                      mt-1
                       z-50
-                      w-52
-                      bg-[#2f2f2f]
-                      rounded-xl
+                      w-48
+                      bg-[#232323]
+                      rounded-2xl
                       border
-                      border-[#444]
+                      border-[#3a3a3a]
                       shadow-2xl
-                      overflow-hidden
+                      p-1.5
+                      space-y-0.5
                       "
                     >
                       <button
@@ -230,46 +241,69 @@ export default function Sidebar({
                         flex
                         items-center
                         gap-3
-                        px-4
-                        py-3
-                        hover:bg-[#3a3a3a]
+                        px-3
+                        py-2.5
+                        rounded-xl
+                        text-sm
+                        text-gray-200
+                        hover:bg-white/5
                         cursor-pointer
+                        transition-all
+                        duration-150
                         "
                       >
-                        <Pencil size={16} />
+                        <Pencil size={16} className="text-gray-400" />
                         Rename
                       </button>
 
                       <button
+                        onClick={() => {
+                          handlePinConversation(conversation._id, "unpin");
+                          setOpenMenu(null);
+                        }}
                         className="
                         w-full
                         flex
                         items-center
                         gap-3
-                        px-4
-                        py-3
-                        hover:bg-[#3a3a3a]
+                        px-3
+                        py-2.5
+                        rounded-xl
+                        text-sm
+                        text-gray-200
+                        hover:bg-white/5
                         cursor-pointer
+                        transition-all
+                        duration-150
                         "
                       >
-                        <PinOff size={16} />
-                        Unpin Chat
+                        <PinOff size={16} className="text-gray-400" />
+                        Unpin chat
                       </button>
 
                       <button
+                        onClick={() => {
+                          setDeleteConfirmChatId(conversation._id);
+                          setDeleteConfirmChatTitle(conversation.title);
+                          setOpenMenu(null);
+                        }}
                         className="
                         w-full
                         flex
                         items-center
                         gap-3
-                        px-4
-                        py-3
-                        text-red-500
-                        hover:bg-[#3a3a3a]
+                        px-3
+                        py-2.5
+                        rounded-xl
+                        text-sm
+                        text-[#f95c5c]
+                        hover:bg-[#f95c5c]/10
                         cursor-pointer
+                        transition-all
+                        duration-150
                         "
                       >
-                        <Trash2 size={16} />
+                        <Trash2 size={16} className="text-[#f95c5c]" />
                         Delete
                       </button>
                     </div>
@@ -356,16 +390,18 @@ export default function Sidebar({
                       onClick={(e) => e.stopPropagation()}
                       className="
                       absolute
-                      right-2
-                      top-10
+                      right-0
+                      top-full
+                      mt-1
                       z-50
-                      w-52
-                      bg-[#2f2f2f]
-                      rounded-xl
+                      w-48
+                      bg-[#232323]
+                      rounded-2xl
                       border
-                      border-[#444]
+                      border-[#3a3a3a]
                       shadow-2xl
-                      overflow-hidden
+                      p-1.5
+                      space-y-0.5
                       "
                     >
                       <button
@@ -379,46 +415,69 @@ export default function Sidebar({
                         flex
                         items-center
                         gap-3
-                        px-4
-                        py-3
-                        hover:bg-[#3a3a3a]
+                        px-3
+                        py-2.5
+                        rounded-xl
+                        text-sm
+                        text-gray-200
+                        hover:bg-white/5
                         cursor-pointer
+                        transition-all
+                        duration-150
                         "
                       >
-                        <Pencil size={16} />
+                        <Pencil size={16} className="text-gray-400" />
                         Rename
                       </button>
 
                       <button
+                        onClick={() => {
+                          handlePinConversation(conversation._id, "pin");
+                          setOpenMenu(null);
+                        }}
                         className="
                         w-full
                         flex
                         items-center
                         gap-3
-                        px-4
-                        py-3
-                        hover:bg-[#3a3a3a]
+                        px-3
+                        py-2.5
+                        rounded-xl
+                        text-sm
+                        text-gray-200
+                        hover:bg-white/5
                         cursor-pointer
+                        transition-all
+                        duration-150
                         "
                       >
-                        <Pin size={16} />
-                        Pin Chat
+                        <Pin size={16} className="text-gray-400" />
+                        Pin chat
                       </button>
 
                       <button
+                        onClick={() => {
+                          setDeleteConfirmChatId(conversation._id);
+                          setDeleteConfirmChatTitle(conversation.title);
+                          setOpenMenu(null);
+                        }}
                         className="
                         w-full
                         flex
                         items-center
                         gap-3
-                        px-4
-                        py-3
-                        text-red-500
-                        hover:bg-[#3a3a3a]
+                        px-3
+                        py-2.5
+                        rounded-xl
+                        text-sm
+                        text-[#f95c5c]
+                        hover:bg-[#f95c5c]/10
                         cursor-pointer
+                        transition-all
+                        duration-150
                         "
                       >
-                        <Trash2 size={16} />
+                        <Trash2 size={16} className="text-[#f95c5c]" />
                         Delete
                       </button>
                     </div>
@@ -504,6 +563,35 @@ export default function Sidebar({
             setUser(updatedUser)
           }
         />
+      )}
+
+      {/* Delete Confirmation Modal */}
+      {deleteConfirmChatId && (
+        <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/60 backdrop-blur-sm">
+          <div className="bg-[#2f2f2f] border border-[#444] rounded-2xl w-full max-w-sm p-6 shadow-2xl">
+            <h3 className="text-lg font-semibold text-white mb-2">Delete chat?</h3>
+            <p className="text-sm text-gray-300 mb-6 leading-relaxed">
+              This will delete <strong className="text-white font-semibold">"{deleteConfirmChatTitle}"</strong>.
+            </p>
+            <div className="flex gap-3 justify-end text-sm">
+              <button
+                onClick={() => setDeleteConfirmChatId(null)}
+                className="px-4 py-2 rounded-xl bg-transparent border border-[#555] hover:bg-[#3d3d3d] text-white font-medium cursor-pointer transition-all duration-150"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={async () => {
+                  await handleDeleteConversation(deleteConfirmChatId);
+                  setDeleteConfirmChatId(null);
+                }}
+                className="px-4 py-2 rounded-xl bg-red-600 hover:bg-red-700 text-white font-medium cursor-pointer transition-all duration-150"
+              >
+                Delete
+              </button>
+            </div>
+          </div>
+        </div>
       )}
     </>
   );

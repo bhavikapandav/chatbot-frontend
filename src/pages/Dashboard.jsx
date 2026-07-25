@@ -1,67 +1,11 @@
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useRef, lazy, Suspense } from "react";
 import { useOutletContext } from "react-router-dom";
 import ChatInput from "../components/ChatInput";
-import { Sparkles, Copy, Check } from "lucide-react";
+import { Sparkles } from "lucide-react";
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
-import { Prism as SyntaxHighlighter } from "react-syntax-highlighter";
-import { vscDarkPlus } from "react-syntax-highlighter/dist/esm/styles/prism";
 
-const CodeBlock = ({ language, value }) => {
-  const [copied, setCopied] = useState(false);
-
-  const handleCopy = async () => {
-    try {
-      await navigator.clipboard.writeText(value);
-      setCopied(true);
-      setTimeout(() => setCopied(false), 2000);
-    } catch (err) {
-      console.error("Failed to copy text: ", err);
-    }
-  };
-
-  return (
-    <div className="my-4 rounded-xl border border-[#3e3e3e] overflow-hidden shadow-2xl bg-[#1e1e1e] w-full">
-      {/* Code Header Bar */}
-      <div className="flex justify-between items-center px-4 py-2 bg-[#2d2d2d] text-xs text-gray-300 border-b border-[#3e3e3e] select-none">
-        <span className="font-mono lowercase">{language || "code"}</span>
-        <button
-          onClick={handleCopy}
-          className="flex items-center gap-1.5 hover:text-white transition duration-150 cursor-pointer p-1 rounded hover:bg-white/5"
-        >
-          {copied ? (
-            <>
-              <Check size={14} className="text-green-400" />
-              <span className="text-green-400 font-medium">Copied!</span>
-            </>
-          ) : (
-            <>
-              <Copy size={14} />
-              <span>Copy code</span>
-            </>
-          )}
-        </button>
-      </div>
-
-      {/* Code Syntax Highlighted Body */}
-      <div className="p-4 overflow-x-auto text-sm leading-relaxed">
-        <SyntaxHighlighter
-          language={language}
-          style={vscDarkPlus}
-          customStyle={{
-            margin: 0,
-            padding: 0,
-            background: "transparent",
-            fontSize: "0.85rem",
-            fontFamily: "monospace"
-          }}
-        >
-          {value}
-        </SyntaxHighlighter>
-      </div>
-    </div>
-  );
-};
+const CodeBlock = lazy(() => import("../components/CodeBlock"));
 
 const markdownComponents = {
   h1: ({ children }) => <h1 className="text-2xl font-bold mt-6 mb-3 text-white tracking-tight">{children}</h1>,
@@ -84,7 +28,9 @@ const markdownComponents = {
     }
     const language = match[1];
     return (
-      <CodeBlock language={language} value={String(children).replace(/\n$/, "")} />
+      <Suspense fallback={<div className="h-20 bg-[#1e1e1e] animate-pulse rounded-xl" />}>
+        <CodeBlock language={language} value={String(children).replace(/\n$/, "")} />
+      </Suspense>
     );
   },
   pre: ({ children }) => <>{children}</>,

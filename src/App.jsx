@@ -3,6 +3,8 @@ import { ToastContainer } from "react-toastify";
 import ProtectedRoute from "./routes/ProtectedRoute";
 import { Suspense, lazy } from "react";
 import { routeList } from "./routes";
+import LoadingScreen from "./components/LoadingScreen";
+
 const AuthenticationLayout = lazy(() => import("./layouts/authenticationLayout"));
 const DashboardLayout = lazy(() => import("./layouts/dashboardLayout"));
 
@@ -22,7 +24,7 @@ function App() {
       />
 
       <BrowserRouter>
-        <Suspense fallback={<h2>Loading...</h2>}>
+        <Suspense fallback={<LoadingScreen />}>
           <Routes>
             <Route element={<AuthenticationLayout />}>
               {routeList

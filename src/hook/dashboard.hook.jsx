@@ -1,10 +1,12 @@
-import { useEffect, useState } from "react"
+import { useEffect, useState, useCallback } from "react"
 import {
     doFecthConvesationList,
     doFetchMessages,
     doSendMessage,
     doCreateConversation,
-    doUpdateConversationTitle
+    doUpdateConversationTitle,
+    doUpdatePinStatus,
+    doDeleteConversation
 } from "@actions";
 
 export const useDashboardHook = () => {
@@ -13,21 +15,38 @@ export const useDashboardHook = () => {
     const [activeChatId, setActiveChatId] = useState(null);
     const [isSendingMessage, setIsSendingMessage] = useState(false);
 
+    const getConversationList = useCallback(async () => {
+        try {
+            const response = await doFecthConvesationList(false);
+            console.log("doFecthConvesationList==============", response);
+
+            if (response?.status === 200) {
+                setConversationList(response?.data);
+            }
+        } catch (error) {
+            console.log({ error });
+        }
+    }, []);
+
     useEffect(() => {
-        const fetchConvesationList = async () => {
+        let isMounted = true;
+        const init = async () => {
             try {
                 const response = await doFecthConvesationList(false);
-                console.log("doFecthConvesationList==============", response);
-
-                if (response?.status === 200) {
+                if (isMounted && response?.status === 200) {
                     setConversationList(response?.data);
                 }
             } catch (error) {
                 console.log({ error });
             }
         };
-        fetchConvesationList();
+        init();
+        return () => {
+            isMounted = false;
+        };
     }, [])
+
+
 
     const handleMessageList = async (conversationId) => {
         try {
@@ -56,10 +75,7 @@ export const useDashboardHook = () => {
                     currentChatId = createResponse.data.ceratedConversation._id;
                     setActiveChatId(currentChatId);
                     // Refresh conversation list
-                    const listResponse = await doFecthConvesationList(false);
-                    if (listResponse?.status === 200) {
-                        setConversationList(listResponse?.data);
-                    }
+                    await getConversationList();
                 } else {
                     throw new Error("Failed to create conversation");
                 }
@@ -81,10 +97,7 @@ export const useDashboardHook = () => {
             const response = await doSendMessage(currentChatId, messageText);
             if (response?.success) {
                 // Fetch the updated conversation list
-                const listResponse = await doFecthConvesationList(false);
-                if (listResponse?.status === 200) {
-                    setConversationList(listResponse?.data);
-                }
+                await getConversationList();
                 // Reload messages for the conversation
                 const msgResponse = await doFetchMessages(currentChatId);
                 if (msgResponse?.status === 200) {
@@ -103,10 +116,36 @@ export const useDashboardHook = () => {
             const response = await doUpdateConversationTitle(conversationId, newTitle);
             if (response?.success) {
                 // Refresh list
-                const listResponse = await doFecthConvesationList(false);
-                if (listResponse?.status === 200) {
-                    setConversationList(listResponse?.data);
+                await getConversationList();
+            }
+        } catch (error) {
+            console.log({ error });
+        }
+    };
+
+    const handlePinConversation = async (conversationId, type) => {
+        try {
+            const response = await doUpdatePinStatus(conversationId, type);
+            if (response?.success) {
+                // Refresh list
+                await getConversationList();
+            }
+        } catch (error) {
+            console.log({ error });
+        }
+    };
+
+    const handleDeleteConversation = async (conversationId) => {
+        try {
+            const response = await doDeleteConversation(conversationId);
+            if (response?.success) {
+                // If the deleted chat was the active one, clear it
+                if (activeChatId === conversationId) {
+                    setActiveChatId(null);
+                    setMessageList([]);
                 }
+                // Refresh list
+                await getConversationList();
             }
         } catch (error) {
             console.log({ error });
@@ -122,6 +161,8 @@ export const useDashboardHook = () => {
         setActiveChatId,
         isSendingMessage,
         sendMessage,
-        handleRenameConversation
+        handleRenameConversation,
+        handlePinConversation,
+        handleDeleteConversation
     }
 }

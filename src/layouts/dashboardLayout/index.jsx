@@ -16,6 +16,8 @@ const DashboardLayout = () => {
         handleMessageList={dashboardState.handleMessageList}
         setMessageList={dashboardState.setMessageList}
         handleRenameConversation={dashboardState.handleRenameConversation}
+        handlePinConversation={dashboardState.handlePinConversation}
+        handleDeleteConversation={dashboardState.handleDeleteConversation}
       />
 
       <div className="flex-1 flex flex-col">
