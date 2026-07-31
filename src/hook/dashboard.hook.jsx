@@ -29,23 +29,8 @@ export const useDashboardHook = () => {
     }, []);
 
     useEffect(() => {
-        let isMounted = true;
-        const init = async () => {
-            try {
-                const response = await doFecthConvesationList(false);
-                if (isMounted && response?.status === 200) {
-                    setConversationList(response?.data);
-                }
-            } catch (error) {
-                console.log({ error });
-            }
-        };
-        init();
-        return () => {
-            isMounted = false;
-        };
-    }, [])
-
+        getConversationList();
+    }, [getConversationList])
 
 
     const handleMessageList = async (conversationId) => {
@@ -165,4 +150,4 @@ export const useDashboardHook = () => {
         handlePinConversation,
         handleDeleteConversation
     }
-}
+}

@@ -4,10 +4,13 @@ import { useState } from "react";
 import { validateRegister, validateSubmitRegister } from "@validations";
 import { setAuthHeader } from "../axiosApi";
 import { toast } from "react-toastify";
+import { useDispatch } from "react-redux";
+import { storeUserAuthDetails } from "../redux/reducers(slices)/userDetails.reducer";
 
 
 export const useRegisterHook = () => {
     const navigate = useNavigate();
+    const dispatch = useDispatch();
     const [isLoading, setIsLoading] = useState(false);
     const [registerData, setRegisterData] = useState({});
     const [validateMessages, setValidateMessages] = useState({});
@@ -52,8 +55,10 @@ export const useRegisterHook = () => {
                 localStorage.clear();
                 if (registerResponse?.data?.token) {
                     localStorage.setItem("_token", registerResponse?.data?.token);
+                    localStorage.setItem("_userId", registerResponse?.data?._id);
                     setAuthHeader(`Bearer ${registerResponse?.data?.token}`);
                 }
+                dispatch(storeUserAuthDetails(registerResponse?.data));
                 navigate("/");
             } else {
                 toast.error(registerResponse?.data?.message);

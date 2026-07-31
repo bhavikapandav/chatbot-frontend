@@ -10,10 +10,12 @@ const userSlice = createSlice({
 
     reducers: {
         storeUserAuthDetails: (state, action) => {
-            state.userDetails = action.payload;
+            state.userDetails = state.userDetails 
+                ? { ...state.userDetails, ...action.payload }
+                : action.payload;
         },
-        clearUserDetails(state) {
-            state.userInfo = null;
+        clearUserDetails: (state) => {
+            state.userDetails = null;
         },
     }
 })

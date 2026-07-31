@@ -1,4 +1,8 @@
 import { useState, useEffect, useRef } from "react";
+import { useSelector, useDispatch } from "react-redux";
+import { toast } from "react-toastify";
+import { doUpdateUserAuthDetails } from "@actions";
+import { storeUserAuthDetails } from "../redux/reducers(slices)/userDetails.reducer";
 
 import {
   Plus,
@@ -24,6 +28,7 @@ export default function Sidebar({
   handlePinConversation,
   handleDeleteConversation,
 }) {
+  const dispatch = useDispatch();
   const [openMenu, setOpenMenu] = useState(null);
   const activeMenuRef = useRef(null);
 
@@ -53,11 +58,23 @@ export default function Sidebar({
   const pinnedConversations = filteredConversations.filter(c => c.is_pinned);
   const recentConversations = filteredConversations.filter(c => !c.is_pinned);
 
+  const userDetails = useSelector((state) => state.userDetails.userDetails);
+
   const [user, setUser] = useState({
     displayName: "Bhavika Pandav",
     username: "@bhavika",
     image: "",
   });
+
+  useEffect(() => {
+    if (userDetails) {
+      setUser({
+        displayName: `${userDetails.first_name || ""} ${userDetails.last_name || ""}`.trim(),
+        username: userDetails.email || "",
+        image: userDetails.image || "",
+      });
+    }
+  }, [userDetails]);
 
   useEffect(() => {
     const handleClickOutside = (event) => {
@@ -74,6 +91,41 @@ export default function Sidebar({
       document.removeEventListener("mousedown", handleClickOutside);
     };
   }, []);
+
+  const handleSaveProfile = async (updatedUser) => {
+    try {
+      if (!userDetails?._id) {
+        toast.error("User not found");
+        return;
+      }
+
+      const nameParts = (updatedUser.displayName || "").trim().split(/\s+/);
+      const firstName = nameParts[0] || "";
+      const lastName = nameParts.slice(1).join(" ") || "";
+      const email = updatedUser.username || "";
+
+      const response = await doUpdateUserAuthDetails(userDetails._id, {
+        firstName,
+        lastName,
+        email,
+      });
+
+      if (response?.status === 200) {
+        dispatch(storeUserAuthDetails(response.data));
+        setUser({
+          displayName: `${response.data.first_name || ""} ${response.data.last_name || ""}`.trim(),
+          username: response.data.email || "",
+          image: response.data.image || "",
+        });
+        toast.success("Profile updated successfully!");
+      } else {
+        toast.error(response?.message || response?.data?.message || "Failed to update profile");
+      }
+    } catch (error) {
+      console.error("Error updating profile:", error);
+      toast.error("An error occurred while updating profile");
+    }
+  };
 
   return (
     <>
@@ -528,6 +580,7 @@ export default function Sidebar({
               className="
               w-10
               h-10
+              shrink-0
               rounded-full
               overflow-hidden
               bg-green-500
@@ -551,12 +604,12 @@ export default function Sidebar({
               )}
             </div>
 
-            <div className="flex-1 text-left">
-              <p className="text-sm font-medium">
+            <div className="flex-1 min-w-0 text-left">
+              <p className="text-sm font-medium truncate">
                 {user.displayName}
               </p>
 
-              <p className="text-xs text-gray-400">
+              <p className="text-xs text-gray-400 truncate">
                 {user.username}
               </p>
             </div>
@@ -574,7 +627,7 @@ export default function Sidebar({
             setShowProfileModal(false)
           }
           onSave={(updatedUser) =>
-            setUser(updatedUser)
+            handleSaveProfile(updatedUser)
           }
         />
       )}

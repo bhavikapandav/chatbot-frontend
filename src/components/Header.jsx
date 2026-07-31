@@ -6,8 +6,12 @@ import {
 } from "lucide-react";
 import { useState, useEffect, useRef } from "react";
 import { useNavigate } from "react-router-dom";
+import { useSelector, useDispatch } from "react-redux";
+import { clearUserDetails } from "../redux/reducers(slices)/userDetails.reducer";
 
 const Header = () => {
+  const dispatch = useDispatch();
+  const userDetails = useSelector((state) => state.userDetails.userDetails);
   const [showMenu, setShowMenu] = useState(false);
   const [showProfileDialog, setShowProfileDialog] = useState(false);
   const menuRef = useRef(null);
@@ -114,7 +118,8 @@ const Header = () => {
             </button>
             <button
               onClick={() => {
-                localStorage.removeItem("_token");
+                localStorage.clear();
+                dispatch(clearUserDetails());
                 navigate("/login");
               }}
               className="
@@ -164,11 +169,13 @@ const Header = () => {
             <div className="space-y-4">
               <div>
                 <label className="block text-sm text-gray-400 mb-1">Name</label>
-                <p className="text-white">User Name</p>
+                <p className="text-white">
+                  {userDetails ? `${userDetails.first_name || ""} ${userDetails.last_name || ""}`.trim() : "User Name"}
+                </p>
               </div>
               <div>
                 <label className="block text-sm text-gray-400 mb-1">Email</label>
-                <p className="text-white">user@example.com</p>
+                <p className="text-white">{userDetails?.email || "user@example.com"}</p>
               </div>
             </div>
             <button
