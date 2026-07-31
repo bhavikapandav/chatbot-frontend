@@ -18,7 +18,18 @@ export const doFecthConvesationList = async (
         return error.response;
     }
 }
-
+export const doFetchUserDetails = async (userDetails) => {
+    try {
+        const response = await axiosApi({
+            method: "GET",
+            url: `/v1/user/conversation/list?currentPage=${currentPage}&pageSize=${pageSize}&isPaginate=${isPaginate}&search=${search}`
+        })
+        return response?.data
+    } catch (error) {
+        console.log({ error });
+        return error.response;
+    }
+}
 export const doFetchMessages = async (conversationId) => {
     try {
         const response = await axiosApi({
