@@ -30,7 +30,7 @@ export const validateLogin = (name, value, validateMessages) => {
         ),
     };
 };
-
+// assad
 export const validateSubmitLogin = (data) => {
     return {
         errors: validateForm(loginSchema, data),
