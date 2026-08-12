@@ -1,5 +1,6 @@
 import axios from "axios";
 import { appConfig } from '../config'
+console.log(appConfig.API_URL, "appConfig.API_URL");
 
 const axiosApi = axios.create({
     baseURL: appConfig.API_URL,
