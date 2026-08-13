@@ -1,10 +1,11 @@
 import axios from "axios";
 import { appConfig } from '../config'
-console.log(appConfig.API_URL, "appConfig.API_URL");
+console.log(appConfig.API_URL, "-------------appConfig.API_URL");
 
 const axiosApi = axios.create({
     baseURL: appConfig.API_URL,
 });
+console.log("axiosApi============", axiosApi);
 
 const setAuthHeader = (token) => {
     axiosApi.defaults.headers.Authorization =
